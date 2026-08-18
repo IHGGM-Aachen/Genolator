@@ -1,0 +1,24 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Experiment tracking
+mlruns/
+outputs/
+inference/
+
+# Model artefacts and data — distributed separately, not via git
+*.pt
+*.pkl
+*.parquet
+
+.DS_Store
+.env
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+
+# Internal working document, not part of the public release
+Genolator_Release.docx

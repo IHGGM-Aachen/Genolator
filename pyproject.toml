@@ -1,0 +1,41 @@
+[project]
+name = "genolator"
+version = "1.0.0"
+description = "Genolator V1 — multimodal genomic QA with virtual token projection (publication release)"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+license = { file = "LICENSE" }
+authors = [{ name = "Martin Danner", email = "mdanner@ukaachen.de" }]
+
+# Inference needs only these: the model is rebuilt with stock transformers + peft.
+# Upper bounds keep resolution inside the major versions this code was written
+# against (notably transformers 4.x) -- without them a fresh resolve pulls
+# transformers 5.x, which installs fine and then breaks at runtime.
+dependencies = [
+    "torch>=2.4.0,<3",
+    "transformers>=4.44.0,<5",
+    "peft>=0.12.0,<1",
+    "accelerate>=0.33.0,<2",
+    "pandas>=2.0.0,<3",
+    "pyarrow>=15.0.0",  # reads the published parquet splits, column-pruned
+    "numpy>=1.26.0,<3",
+    "huggingface-hub>=0.24.0,<1",
+    "mlflow>=2.15.0,<4",
+    "tqdm>=4.66.0,<5",
+]
+
+[project.optional-dependencies]
+# Training only. Unsloth loads and LoRA-patches Llama-3. It is kept out of the
+# base dependencies because it resolves only on CUDA platforms, so that a plain
+# `uv sync` still works on a laptop. For an unusual CUDA/torch combination,
+# install it per https://github.com/unslothai/unsloth instead of the plain wheel.
+train = ["unsloth>=2024.8"]
+
+# Test suite. GPU-free: see tests/README.md for what it does and does not cover.
+test = ["pytest>=8,<9"]
+
+# Environment-only project: the two entrypoints are run as scripts
+# (`uv run python train_genolator.py ...`), so there is nothing to build or
+# install as an importable distribution.
+[tool.uv]
+package = false
