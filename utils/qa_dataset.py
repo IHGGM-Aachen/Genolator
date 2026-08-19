@@ -61,13 +61,23 @@ class GenomicQADatasetBase(Dataset):
         )
         prompt_len = prompt_enc.input_ids.shape[-1]
 
+        attention_mask = enc.attention_mask.squeeze(0)
+
         labels = input_ids.clone()
         labels[:prompt_len] = -100  # Use -100 to ignore in LM loss
+
+        # Mask out padding in label as well: pad_token is eos_token, so unmasked padding
+        # dilutes the loss and leaves less training signal per step. Keep the first pad
+        # position, it is the only EOS the tokenizer produces and generation stops on EOS.
+        padding = (attention_mask == 0).nonzero(as_tuple=True)[0]
+        labels[padding] = -100
+        if padding.numel():
+            labels[padding[0]] = self.tokenizer.eos_token_id
 
         # Return all fields -- token IDs, metadata and embedding features
         sample = {
             "input_ids": input_ids,
-            "attention_mask": enc.attention_mask.squeeze(0),
+            "attention_mask": attention_mask,
             "labels": labels,
             "kind": item.get("kind", "unknown"),
             "response": response,

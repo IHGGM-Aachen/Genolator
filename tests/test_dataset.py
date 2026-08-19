@@ -43,6 +43,33 @@ def test_no_eos_inside_the_attended_region(pst_dataset, tokenizer):
     assert not (real == tokenizer.eos_token_id).any()
 
 
+def test_padding_is_masked_out(pst_dataset):
+    """No loss on padding, apart from the single stop token."""
+    sample = pst_dataset[0]
+    padding = sample["labels"][sample["attention_mask"] == 0]
+    assert (padding[1:] == -100).all()
+
+
+def test_one_eos_label_survives_in_padding(pst_dataset, tokenizer):
+    """The first pad position stays supervised, otherwise nothing teaches the model to stop."""
+    sample = pst_dataset[0]
+    padding = sample["labels"][sample["attention_mask"] == 0]
+    live = padding[padding != -100]
+    assert live.tolist() == [tokenizer.eos_token_id]
+
+
+def test_supervised_positions_are_response_plus_stop(pst_dataset, synthetic_rows, tokenizer):
+    """Loss covers the response tokens plus the stop token, nothing else."""
+    for idx in range(len(synthetic_rows)):
+        sample = pst_dataset[idx]
+        prompt_len = len(tokenizer(synthetic_rows.iloc[idx]["prompt"],
+                                   truncation=True, max_length=MAX_LENGTH).input_ids)
+        attended = int(sample["attention_mask"].sum())
+        supervised = int((sample["labels"] != -100).sum())
+        assert supervised == attended - prompt_len + 1, f"row {idx}"
+        assert supervised > 0, f"row {idx} has no supervised position"
+
+
 def test_length_matches_frame(pst_dataset, synthetic_rows):
     assert len(pst_dataset) == len(synthetic_rows)
 

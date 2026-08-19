@@ -234,6 +234,15 @@ and both projector parameter groups, which is what the published runs used.
 `--projector_learning_rate` overrides the rate for the two projectors only; leave
 it unset to reproduce the published configuration.
 
+**Loss over the answer only:** padding is masked out of the labels. Because `pad_token` is set
+to `eos_token`, earlier versions of this code left every padding position supervised. Those
+positions are trivial to predict, so they diluted the loss, left less training signal per step
+and cost training efficiency. The first pad position is kept as the stop token, since the
+tokenizer appends no EOS of its own and generation stops on EOS; everything after it is `-100`.
+Losses printed by this code are therefore higher than, and not comparable to, the ones reported
+for the published checkpoints. Those checkpoints and the Zenodo snapshot were trained before
+this change, so the figures reported for them stay reproducible from those artefacts.
+
 ### Smoke test
 
 `--max_samples` caps every split so a run finishes in minutes instead of days,
