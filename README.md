@@ -5,10 +5,13 @@ Both are Llama-3 models extended with **virtual token projectors** that map
 precomputed genomic embeddings into the language model's input embedding space,
 so the LLM can answer gene-level questions conditioned on sequence and structure.
 
-| Published model | Modalities | Checkpoint |
-| --- | --- | --- |
-| `genolator_v1_dna_and_pst` | DNA (Evo2) + protein structure (PST) | `genolator_dna_and_pst.pt` |
-| `genolator_v1_dna_and_esm` | DNA (Evo2) + amino acid (ESM-2) | `genolator_dna_and_esm.pt` |
+| Published model | Modalities | Checkpoint | Weights |
+| --- | --- | --- | --- |
+| `genolator_v1_dna_and_pst` | DNA (Evo2) + protein structure (PST) | `genolator_dna_and_pst.pt` | [`Llama-3-Genolator-v1-PST`][pst] |
+| `genolator_v1_dna_and_esm` | DNA (Evo2) + amino acid (ESM-2) | `genolator_dna_and_esm.pt` | [`Llama-3-Genolator-v1-ESM`][esm] |
+
+[pst]: https://huggingface.co/CHGGM-Aachen/Llama-3-Genolator-v1-PST
+[esm]: https://huggingface.co/CHGGM-Aachen/Llama-3-Genolator-v1-ESM
 
 Each published model is a directory holding three files: the checkpoint above,
 `dna_projector.pt` and the protein-side projector (`esm_projector.pt` or `pst_projector.pt`). The directory name itself
@@ -18,6 +21,22 @@ The two variants share one architecture and one training procedure; they differ
 only in which protein-side embedding column they consume. Both are therefore
 driven by a single training script and a single inference script, selected with
 `--embedding_type {pst,esm}`.
+
+## Releases
+
+Everything needed to reproduce or reuse the models is on the Hugging Face Hub under the
+[CHGGM-Aachen](https://huggingface.co/CHGGM-Aachen) organisation:
+
+| | Repository |
+| --- | --- |
+| Dataset | [`CHGGM-Aachen/genolator-v1-qa`](https://huggingface.co/datasets/CHGGM-Aachen/genolator-v1-qa) |
+| DNA + PST model | [`CHGGM-Aachen/Llama-3-Genolator-v1-PST`][pst] |
+| DNA + ESM model | [`CHGGM-Aachen/Llama-3-Genolator-v1-ESM`][esm] |
+
+Each model repository holds the checkpoint, both projectors and a training summary, with a
+model card covering the exact inference flags. The dataset repository holds the
+gene-disjoint train/validation/test splits with the precomputed embeddings these scripts
+consume. See [Dataset](#dataset) for how the code reads them.
 
 ## Contents
 
@@ -127,6 +146,8 @@ python train_genolator.py --embedding_type pst --output_dir ./out --hf_token "$H
 `HF_HOME` to move that cache onto a volume with room for it.
 
 `--dataset` takes any dataset repo id, or a local directory holding the splits.
+
+The trained weights that go with these splits are linked under [Releases](#releases).
 `--dataset_revision` pins a branch, tag or commit sha, which is what makes a run
 exactly reproducible against a dataset that may later change.
 
