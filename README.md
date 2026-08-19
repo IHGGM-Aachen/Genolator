@@ -348,6 +348,12 @@ learnable `null_emb` fallback used when a modality is missing for a sample. With
 mean L2 norm of the text token embeddings in the batch, which keeps the injected
 modalities on the same scale as the language tokens.
 
+## Press
+
+Genolator is featured in a Microsoft customer success story on Universitätsklinikum
+Aachen, which includes a video:
+<https://www.microsoft.com/en/customers/story/26455-universitatsklinikum-aachen-aor-azure>
+
 ## License
 
 See `LICENSE`.
